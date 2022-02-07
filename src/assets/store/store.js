@@ -1,99 +1,103 @@
+import axios from 'axios';
 import {createStore} from 'vuex'
-import axios from 'axios'
-import route from '../../router';
 
 const store = createStore({
+
     state:{
-        task: [],
-        show: false,
-        taskid: "",
-        taskname: "",
+        tasklist: [],
+        show:false,
         updatebtnshow: true,
-        submitshow: true
+        submitshow: true,
+        taskname:"",
+        taskid:null
+    },
+    getters:{
+        todos:(state)=>{
+          return  state.tasklist
+
+        }
+
+    },
+
+    actions:{
+        async getAllData(state){
+            let alldata = await axios.get('http://localhost:3000/todotask');
+            // console.log(alldata.data);
+            state.commit('updateData',alldata.data);
+        },
+        async addToDo({commit},taskname){
+            console.log(taskname);
+            let addData = await axios.post('http://localhost:3000/todotask',{taskname:taskname});
+            commit('addingData',addData.data);
+        },
+
+        async deleteDate(state,id){
+             await axios.delete(`http://localhost:3000/todotask/${id}`);
+             state.commit('deleteUi',id);
+        },
+        async taskUpdate({commit},id) {
+            let getupdatedata = await axios.get(`http://localhost:3000/todotask/${id}`);
+
+            commit('afterTastUpdate',getupdatedata.data)
+        },
+
+        async updateData({state,commit},id) {
+            console.log("myname",state.taskname);
+            console.log("myid",id);
+
+            // console.log(this.state.taskname +id);
+            let result = await axios.put(`http://localhost:3000/todotask/${id}`, {
+                taskname: state.taskname
+            });
+
+            commit('uiUpdate',result);
+            
+
+        }
     },
     mutations:{
-        async onload(state){
-            let getlist = await axios.get("http://localhost:3000/todotask");
-            console.log(getlist.data);
-            state.task = getlist.data;
-            route.push({name:"Home"});
-            },
-            showInput(state) {
-                state.show = true;
-                state.updatebtnshow = false;
-                state.submitshow = true;
-            },
-            async submitdata(state) {
-                let submiteddata = await axios.post("http://localhost:3000/todotask", {
-                    taskname: state.taskname
-                });
-                console.log(submiteddata);
-                state.show = !state.show;
-                state.taskname = "";
-                if(submiteddata.status==201){
-                    // this.commit(onload);
-                }
-                
-            },
-
-            async taskUpdate(state,id) {
-                let getupdatedata = await axios.get(`http://localhost:3000/todotask/${id}`);
-                state.taskname = getupdatedata.data.taskname;
-                state.taskid = getupdatedata.data.id;
-                state.show = true;
-                state.submitshow = false;
-                state.updatebtnshow = true;
-                //  console.log(this.taskid);
-                //  let updateData = await axios.put(`http://localhost:3000/todotask/${id}`,{
-                //      taskname:this.taskname
-                //  });
-                //  console.log(updateData);
-                //  if(updateData.status == 200){
-                //      alert("update successful");
-                //  }
-            },
-            async updateData(state,id) {
-                // console.log("myid",id.taskid);
-                let result = await axios.put(`http://localhost:3000/todotask/${id.taskid}`, {
-                    taskname: state.taskname
-                });
-                console.log(result);
-                if (result.status == 200) {
-                    alert("update successful");
-                    // this.commit(onload);
-                }
-            },
-
-            async deletetask(state, id){
-                let result = await axios.delete(`http://localhost:3000/todotask/${id}`);
-                console.log(result);
-                if(result.status==200){
-                    
-                    alert("One task deleted" +state);
-                    // this.commit(onload);
-                }
-                
-            }
-
-    },
-    actions:{
-        getallfatchdata(state){
+        updateData:(state,value)=>{
+            state.tasklist = value
+        },
+        showInput:(state)=>{
+            state.show =!state.show;
+            state.updatebtnshow =false;
+        },
+        addingData:(state,value)=>{
+            state.tasklist.push(value);
+            state.taskname = " ",
+            state.show =!state.show;
             
-           return state.commit('onload');
         },
-        actionSubmitData(state){
-            state.commit('submitdata');
+        deleteUi:(state,id)=>{  
+            console.log("my tasklist",state.tasklist.a);
+           state.tasklist = state.tasklist.filter(todo => todo.id !== id)
+           
+
         },
-        actiontaskUpdate(state,id){
-            return state.commit('taskUpdate',id);
+        afterTastUpdate(state,result){
+            state.taskname = result.taskname;
+            console.log(state.taskname);
+            state.taskid = result.id;
+            state.show = true;
+            state.submitshow = false;
+            state.updatebtnshow = true;
         },
-        actionupdateData(state,id){
-            return state.commit('updateData',id);
-        },
-        actiondeletetask(state,id){
-            return state.commit('deletetask',id);
+
+        uiUpdate:(state,result)=>{
+            // console.log("Find index id",result.taskid);
+            let id = result.taskid;
+            // console.log(state.tasklist);
+            let objIndex = state.tasklist.findIndex(todo=>todo.id ==id);
+            console.log("Object id", objIndex);
+            state.tasklist[objIndex].taskname = state.taskname;
+
+
+
         }
+
     }
+
 });
 
 export default store;

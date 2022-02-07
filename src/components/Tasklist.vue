@@ -8,60 +8,87 @@
                 <th> Task Name </th>
                 <th> Action </th>
             </tr>
-            <tr v-for="i in task" :key="i.id">
+            <tr v-for="i in todos" :key="i.id">
+                <td>
+                    {{i.id}}
+                </td>
+                <td>
+                    {{i.taskname}}
+                </td>
+                <td>
+                    <button class="tablebtn update" v-on:click="taskUpdate(i.id)">Update</button>
+                    <button class="tablebtn delete" v-on:click="deleteDate(i.id)">Completed</button>
+                </td>
+            </tr>
+            <!-- <tr v-for="i in task" :key="i.id">
                 <td>{{i.id}}</td>
                 <td>{{i.taskname}}</td>
                 <td>
                     <button class="tablebtn update" v-on:click="taskUpdate(i.id)">Update</button>
                     <button class="tablebtn delete" v-on:click="deletetask(i.id)">Completed</button>
                 </td>
-            </tr>
+            </tr> -->
         </table>
 
         <div class="addtask" v-if="show">
-            <!-- <p>{{this.$store.state.taskname}}</p> -->
+            <p>{{this.$store.state.taskname}}</p>
+
             <input type="text" v-model="this.$store.state.taskname">
-            <button v-if="submitshow" class="submitbtn addtaskbtn" v-on:click="submitdata"> Submit</button>
-            <button v-if="updatebtnshow" class="submitbtn addtaskbtn" v-on:click="updateData({taskid})"> Update</button>
+            <button v-if="submitshow" class="submitbtn addtaskbtn" v-on:click="onSubmit"> Submit</button>
+            <button v-if="updatebtnshow" class="submitbtn addtaskbtn" v-on:click="updateData(taskid)"> Update</button>
         </div>
-        <button v-if="!show" class="addtaskbtn" v-on:click="showInput()"> Add task</button>
+        <button v-if="!show" class="addtaskbtn" v-on:click="showInput()"> Add task </button>
     </div>
 </div>
 </template>
 
 <script>
-import {mapState,mapMutations,mapActions} from 'vuex'
+import { mapGetters, mapActions,mapState,mapMutations } from 'vuex'
 export default {
-    name:"Tasklist",
-    computed:{
-        ...mapState({
-            task:(state)=>state.task,
-            show:(state)=>state.show,
-            taskid:(state)=>state.taskid,
-            taskname:(state)=>state.taskname,
-            updatebtnshow:(state)=>state.updatebtnshow,
-            submitshow:(state)=>state.submitshow
-            
-        })
-    },
-    methods:{
-        ...mapMutations({
-            showInput:'showInput'
-        }),
+    name: "Tasklist",
 
-        ...mapActions({
-            submitdata:'actionSubmitData',
-            taskUpdate:'actiontaskUpdate',
-            updateData:'actionupdateData',
-            deletetask:'actiondeletetask'
-        })
+    methods: {
+
+        onUpdate(id){
+            this.updateData({myid:id, myvalue:this.$store.taskname});
+        },
+
+
+        onSubmit(){
+            this.addToDo(this.$store.state.taskname);
+        },
+
+        ...mapActions([
+            'getAllData',
+            'addToDo',
+            'deleteDate',
+            'taskUpdate',
+            'updateData'
+        ]),
+        ...mapMutations([
+            'showInput'
+            
+        ])
     },
-    mounted(){
-      return this.$store.dispatch('getallfatchdata');
+    computed: {
+        ...mapState([
+            'show',
+            'submitshow',
+            'updatebtnshow',
+            'taskname',
+            'taskid'
+            
+        ]),
+        ...mapGetters([
+            'todos'
+        ])
+    },
+    created() {
+        this.getAllData();
     }
+
 }
 </script>
-
 
 <style scoped>
 .listtable table {
@@ -70,6 +97,7 @@ export default {
     margin-left: auto;
     margin-right: auto;
 }
+
 .listtable th {
     padding: 12px 5px 0px 5px;
     padding-bottom: 12px;
@@ -77,21 +105,27 @@ export default {
     background-color: orange;
     color: white;
 }
+
 .listtable tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+
 .listtable tr {
     text-align: left;
 }
+
 .listtable td {
     padding: 5px
 }
+
 .listtable tr:hover {
     background-color: #ddd;
 }
+
 .addtask {
     margin-top: 20px;
 }
+
 .addtask input {
     width: 300px;
     height: 40px;
@@ -103,6 +137,7 @@ export default {
     border: 2px solid orange;
     border-radius: 20px;
 }
+
 .tablebtn {
     width: 100px;
     padding: 5px;
@@ -112,12 +147,15 @@ export default {
     cursor: pointer;
     border-radius: 5px;
 }
+
 .update {
     background-color: skyblue;
 }
+
 .delete {
     background-color: rgba(255, 0, 0, 0.541);
 }
+
 .addtaskbtn {
     width: 172px;
     padding: 11px;
@@ -129,6 +167,7 @@ export default {
     background-color: orange;
     font-size: 16px;
 }
+
 .submitbtn {
     background-color: gold;
 }

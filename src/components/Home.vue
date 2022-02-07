@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>I am from home components</h1>
+        
         <Tasklist/>
         
     </div>
