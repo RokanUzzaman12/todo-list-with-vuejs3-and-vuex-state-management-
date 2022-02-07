@@ -50,7 +50,7 @@ const store = createStore({
                 taskname: state.taskname
             });
 
-            commit('uiUpdate',result);
+            commit('uiUpdate',result.data);
             
 
         }
@@ -86,11 +86,15 @@ const store = createStore({
 
         uiUpdate:(state,result)=>{
             // console.log("Find index id",result.taskid);
-            let id = result.taskid;
+            // let id = result.taskid;
             // console.log(state.tasklist);
-            let objIndex = state.tasklist.findIndex(todo=>todo.id ==id);
-            console.log("Object id", objIndex);
+
+            let objIndex = [...state.tasklist].findIndex(todo=>todo.id ==result.id);
+
+            // console.log(state.tasklist[objIndex].taskname +"------------"+state.taskname);
             state.tasklist[objIndex].taskname = state.taskname;
+            state.taskname = " ";
+            state.show = false;
 
 
 
