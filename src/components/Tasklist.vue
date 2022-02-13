@@ -17,7 +17,7 @@
                 </td>
                 <td>
                     <button class="tablebtn update" v-on:click="taskUpdate(i.id)">Update</button>
-                    <button class="tablebtn delete" v-on:click="deleteDate(i.id)">Completed</button>
+                    <button class="tablebtn delete" v-on:click="onDelete(i.id)">Completed</button>
                 </td>
             </tr>
             <!-- <tr v-for="i in task" :key="i.id">
@@ -35,7 +35,7 @@
 
             <input type="text" v-model="this.$store.state.taskname">
             <button v-if="submitshow" class="submitbtn addtaskbtn" v-on:click="onSubmit"> Submit</button>
-            <button v-if="updatebtnshow" class="submitbtn addtaskbtn" v-on:click="updateData(taskid)"> Update</button>
+            <button v-if="updatebtnshow" class="submitbtn addtaskbtn" v-on:click="onUpdate(taskid)"> Update</button>
         </div>
         <button v-if="!show" class="addtaskbtn" v-on:click="showInput()"> Add task </button>
     </div>
@@ -43,19 +43,52 @@
 </template>
 
 <script>
-import { mapGetters, mapActions,mapState,mapMutations } from 'vuex'
+import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
 export default {
     name: "Tasklist",
 
     methods: {
 
-        onUpdate(id){
-            this.updateData({myid:id, myvalue:this.$store.taskname});
+        onUpdate(id) {
+            this.updateData(id).then(res=>{
+                if(res.status == 200){
+                        this.$swal.fire({
+                        title: 'Updated',
+                        text: 'Updated successfully',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    })
+                }
+            })
         },
 
+        onSubmit() {
+            this.addToDo(this.$store.state.taskname).then(res => {
+                // console.log("from component", res);
 
-        onSubmit(){
-            this.addToDo(this.$store.state.taskname);
+                if (res.status == 201) {
+                    this.$toast.open({
+
+                        message: 'Task added successfully',
+                        type: 'success',
+                        position: 'top-right'
+                        
+                    });
+                }
+            })
+
+        },
+        onDelete(id) {
+            this.deleteDate(id).then(res => {
+                if (res.status == 200) {
+                    this.$swal.fire({
+                        title: 'Delete',
+                        text: 'One item deleted ?',
+                        icon: 'error',
+                        confirmButtonText: 'Ok'
+                    })
+                }
+            })
         },
 
         ...mapActions([
@@ -67,7 +100,7 @@ export default {
         ]),
         ...mapMutations([
             'showInput'
-            
+
         ])
     },
     computed: {
@@ -77,7 +110,7 @@ export default {
             'updatebtnshow',
             'taskname',
             'taskid'
-            
+
         ]),
         ...mapGetters([
             'todos'
@@ -85,6 +118,7 @@ export default {
     },
     created() {
         this.getAllData();
+
     }
 
 }

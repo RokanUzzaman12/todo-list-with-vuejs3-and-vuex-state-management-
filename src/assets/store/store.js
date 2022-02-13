@@ -1,5 +1,7 @@
 import axios from 'axios';
-import {createStore} from 'vuex'
+
+import {createStore} from 'vuex';
+
 
 const store = createStore({
 
@@ -26,32 +28,52 @@ const store = createStore({
             state.commit('updateData',alldata.data);
         },
         async addToDo({commit},taskname){
-            console.log(taskname);
-            let addData = await axios.post('http://localhost:3000/todotask',{taskname:taskname});
-            commit('addingData',addData.data);
+            try{
+                let result = await axios.post('http://localhost:3000/todotask',{taskname:taskname});
+                console.log(result.status);
+                commit('addingData',result.data);
+                return result
+            }catch (err){
+                console.log(err);
+            }
+            
+                // try{
+                //     let result = await axios.post('http://localhost:3000/todotask',{taskname:taskname});
+                // }
+
+            // commit('addingData',result.data);
+            
+            
         },
 
         async deleteDate(state,id){
-             await axios.delete(`http://localhost:3000/todotask/${id}`);
-             state.commit('deleteUi',id);
+            try{
+                let result = await axios.delete(`http://localhost:3000/todotask/${id}`);
+                state.commit('deleteUi',id);
+                return result
+
+            }catch(err){
+                console.log(err);
+            }
+
         },
         async taskUpdate({commit},id) {
-            let getupdatedata = await axios.get(`http://localhost:3000/todotask/${id}`);
-
+            let getupdatedata = await axios.get(`http://localhost:3000/todotask/${id}`)
             commit('afterTastUpdate',getupdatedata.data)
+            
         },
 
         async updateData({state,commit},id) {
-            console.log("myname",state.taskname);
-            console.log("myid",id);
+            try{
+                let result = await axios.put(`http://localhost:3000/todotask/${id}`,{taskname: state.taskname})
+                commit('uiUpdate',result.data);
+                // console.log(result)
+                return result
 
-            // console.log(this.state.taskname +id);
-            let result = await axios.put(`http://localhost:3000/todotask/${id}`, {
-                taskname: state.taskname
-            });
 
-            commit('uiUpdate',result.data);
-            
+            }catch(err){
+                console.log(err);
+            }    
 
         }
     },
@@ -62,11 +84,12 @@ const store = createStore({
         showInput:(state)=>{
             state.show =!state.show;
             state.updatebtnshow =false;
+            state.submitshow=true;
         },
         addingData:(state,value)=>{
             state.tasklist.push(value);
-            state.taskname = " ",
-            state.show =!state.show;
+            state.taskname = " ";
+            state.show =!state.show;   
             
         },
         deleteUi:(state,id)=>{  
